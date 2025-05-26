@@ -34,8 +34,78 @@ class EnsambladorIA32:
             print(f"Etiqueta {etiqueta} definida en {self.contador_posicion:04X}")
 
     def procesar_instruccion(self, instruccion):
-        # Por ahora solo imprimir para verificar
-        print(f"Procesando instrucción en {self.contador_posicion:04X}: {instruccion}")
-        # Aquí luego iría la lógica para parsear instrucción y generar código hex
-        # Actualizamos el contador_posicion simulando 2 bytes por instrucción (solo para ejemplo)
-        self.contador_posicion += 2
+        partes = instruccion.split(None, 1)
+        if len(partes) != 2:
+            print(f"Error: instrucción mal formada '{instruccion}'")
+            return
+        mnemonico = partes[0].upper()
+        operandos = partes[1].split(',')
+        # Limpiar operandos
+        operandos = [op.strip().upper() for op in operandos]
+        
+        if mnemonico == 'MOV':
+            self.generar_mov(operandos)
+        else:
+            print(f"Instrucción '{mnemonico}' no implementada aún")
+            self.contador_posicion += 2  # Temporal   
+            
+    def generar_mov(self, operandos):
+        if len(operandos) != 2:
+            print("Error: MOV requiere 2 operandos")
+            return
+
+        dest, src = operandos
+        
+        # Registro a registro
+        if dest in REGISTROS_32 and src in REGISTROS_32:
+            opcode = 0x89  # MOV reg to reg
+            mod = 0b11     # modo registro a registro
+            reg = REGISTROS_32[src]   # registro fuente (reg field)
+            rm = REGISTROS_32[dest]   # registro destino (r/m field)
+
+            # Byte ModR/M: mod (2 bits) | reg (3 bits) | r/m (3 bits)
+            modrm = (mod << 6) | (reg << 3) | rm
+
+            self.codigo_hex.append(opcode)
+            self.codigo_hex.append(modrm)
+
+            print(f"Generado MOV reg,reg: opcode {opcode:02X} modrm {modrm:02X}")
+            self.contador_posicion += 2
+            return
+
+        # Inmediato a registro (ejemplo MOV EAX, 10)
+        if dest in REGISTROS_32:
+            try:
+                valor_inmediato = int(src, 0)  # Detecta decimal, hex (0x), etc.
+            except ValueError:
+                print(f"Error: valor inmediato inválido '{src}'")
+                return
+
+            opcode = 0xB8 + REGISTROS_32[dest]  # Opcode MOV reg32, imm32 empieza en B8
+            self.codigo_hex.append(opcode)
+
+            # El inmediato es de 32 bits, little endian
+            for i in range(4):
+                self.codigo_hex.append((valor_inmediato >> (8 * i)) & 0xFF)
+
+            print(f"Generado MOV reg,imm: opcode {opcode:02X} imm {valor_inmediato}")
+            self.contador_posicion += 5  # 1 byte opcode + 4 bytes inmediato
+            return
+
+        print("Error: modo de direccionamiento no soportado o mal operandos")
+
+# Constantes globales
+REGISTROS_32 = {
+    'EAX': 0b000,
+    'ECX': 0b001,
+    'EDX': 0b010,
+    'EBX': 0b011,
+}
+
+if __name__ == "__main__":
+    ensamblador = EnsambladorIA32()
+    ensamblador.ensamblar("programa.asm")
+
+    # Mostrar código generado en hexadecimal
+    print("Código máquina generado:")
+    print(" ".join(f"{byte:02X}" for byte in ensamblador.codigo_hex))
