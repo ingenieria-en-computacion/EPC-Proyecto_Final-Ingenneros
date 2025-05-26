@@ -1,3 +1,11 @@
+# Constantes globales
+REGISTROS_32 = {
+    'EAX': 0b000,
+    'ECX': 0b001,
+    'EDX': 0b010,
+    'EBX': 0b011,
+}
+
 class EnsambladorIA32:
     def __init__(self):
         self.tabla_simbolos = {}  # {simbolo: direccion}
@@ -45,6 +53,9 @@ class EnsambladorIA32:
         
         if mnemonico == 'MOV':
             self.generar_mov(operandos)
+        elif mnemonico == 'ADD':
+            self.generar_add(operandos)
+        
         else:
             print(f"Instrucción '{mnemonico}' no implementada aún")
             self.contador_posicion += 2  # Temporal   
@@ -53,7 +64,6 @@ class EnsambladorIA32:
         if len(operandos) != 2:
             print("Error: MOV requiere 2 operandos")
             return
-
         dest, src = operandos
         
         # Registro a registro
@@ -93,14 +103,51 @@ class EnsambladorIA32:
             return
 
         print("Error: modo de direccionamiento no soportado o mal operandos")
+    
+    def generar_add(self, operandos):
+        if len(operandos) != 2:
+            print("Error: ADD requiere 2 operandos")
+            return
 
-# Constantes globales
-REGISTROS_32 = {
-    'EAX': 0b000,
-    'ECX': 0b001,
-    'EDX': 0b010,
-    'EBX': 0b011,
-}
+        dest, src = operandos
+
+        # Registro a registro
+        if dest in REGISTROS_32 and src in REGISTROS_32:
+            opcode = 0x01
+            mod = 0b11
+            reg = REGISTROS_32[src]
+            rm = REGISTROS_32[dest]
+            modrm = (mod << 6) | (reg << 3) | rm
+
+            self.codigo_hex.append(opcode)
+            self.codigo_hex.append(modrm)
+            print(f"Generado ADD reg,reg: opcode {opcode:02X} modrm {modrm:02X}")
+            self.contador_posicion += 2
+            return
+
+        # Inmediato a registro
+        if dest in REGISTROS_32:
+            try:
+                valor_inmediato = int(src, 0)
+            except ValueError:
+                print(f"Error: valor inmediato inválido '{src}'")
+                return
+
+            opcode = 0x81
+            mod = 0b11
+            reg = 0b000
+            rm = REGISTROS_32[dest]
+            modrm = (mod << 6) | (reg << 3) | rm
+
+            self.codigo_hex.append(opcode)
+            self.codigo_hex.append(modrm)
+            for i in range(4):
+                self.codigo_hex.append((valor_inmediato >> (8 * i)) & 0xFF)
+            print(f"Generado ADD reg,imm: opcode {opcode:02X} modrm {modrm:02X} imm {valor_inmediato}")
+            self.contador_posicion += 6
+            return
+
+        print("Error: modo de direccionamiento no soportado o mal operandos")
 
 if __name__ == "__main__":
     ensamblador = EnsambladorIA32()
