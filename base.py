@@ -55,7 +55,8 @@ class EnsambladorIA32:
             self.generar_mov(operandos)
         elif mnemonico == 'ADD':
             self.generar_add(operandos)
-        
+        elif mnemonico == 'SUB':
+            self.generar_sub(operandos)
         else:
             print(f"Instrucción '{mnemonico}' no implementada aún")
             self.contador_posicion += 2  # Temporal   
@@ -144,6 +145,51 @@ class EnsambladorIA32:
             for i in range(4):
                 self.codigo_hex.append((valor_inmediato >> (8 * i)) & 0xFF)
             print(f"Generado ADD reg,imm: opcode {opcode:02X} modrm {modrm:02X} imm {valor_inmediato}")
+            self.contador_posicion += 6
+            return
+
+        print("Error: modo de direccionamiento no soportado o mal operandos")
+
+    def generar_sub(self, operandos):
+        if len(operandos) != 2:
+            print("Error: SUB requiere 2 operandos")
+            return
+
+        dest, src = operandos
+
+        # Registro a registro
+        if dest in REGISTROS_32 and src in REGISTROS_32:
+            opcode = 0x29
+            mod = 0b11
+            reg = REGISTROS_32[src]
+            rm = REGISTROS_32[dest]
+            modrm = (mod << 6) | (reg << 3) | rm
+
+            self.codigo_hex.append(opcode)
+            self.codigo_hex.append(modrm)
+            print(f"Generado SUB reg,reg: opcode {opcode:02X} modrm {modrm:02X}")
+            self.contador_posicion += 2
+            return
+
+        # Inmediato a registro
+        if dest in REGISTROS_32:
+            try:
+                valor_inmediato = int(src, 0)
+            except ValueError:
+                print(f"Error: valor inmediato inválido '{src}'")
+                return
+
+            opcode = 0x81
+            mod = 0b11
+            reg = 0b101
+            rm = REGISTROS_32[dest]
+            modrm = (mod << 6) | (reg << 3) | rm
+
+            self.codigo_hex.append(opcode)
+            self.codigo_hex.append(modrm)
+            for i in range(4):
+                self.codigo_hex.append((valor_inmediato >> (8 * i)) & 0xFF)
+            print(f"Generado SUB reg,imm: opcode {opcode:02X} modrm {modrm:02X} imm {valor_inmediato}")
             self.contador_posicion += 6
             return
 
