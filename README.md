@@ -1,44 +1,60 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/3l5uE2JZ)
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=19627061&assignment_repo_type=AssignmentRepo)
+# Ensamblador IA-32 (x86, 32 bits)
 
-# Proyecto Final: Ensamblador Básico IA-32 (x86) de 32 bits
+Este proyecto implementa un ensamblador básico en Python para la arquitectura IA-32 (x86, 32 bits). El ensamblador realiza el proceso en **una sola pasada** y genera:
 
-## Descripción
+- Código máquina en hexadecimal (`programa.hex`)
+- Tabla de símbolos (`simbolos.txt`)
+- Tabla de referencias pendientes (`referencias.txt`)
 
-Este proyecto consiste en desarrollar un ensamblador básico para arquitectura IA-32 (x86) de 32 bits que realice el proceso de ensamblado en una sola pasada. El ensamblador debe leer código fuente en lenguaje ensamblador, generar la tabla de símbolos, resolver referencias pendientes y producir el código máquina en formato hexadecimal.
+## 📦 Requisitos
 
-### Funcionalidades principales
+- Python 3.6 o superior
 
-- Soporte para instrucciones básicas: `MOV`, `ADD`, `SUB`, `JMP`, `CMP`, `JE`, `JNE`.
-- Manejo de modos de direccionamiento: registro a registro, inmediato a registro, memoria a registro (con etiquetas simples).
-- Generación automática de:
-  - Tabla de símbolos (etiquetas y direcciones).
-  - Tabla de referencias pendientes (saltos a etiquetas definidas posteriormente).
-  - Código máquina en hexadecimal.
-- Generación de archivos de salida que incluyen el código máquina y reportes de las tablas.
+## ⚙️ Instrucciones soportadas
 
-## Requisitos
+| Instrucción | Sintaxis       | Opcode     |
+|------------|----------------|------------|
+| `MOV`      | `MOV dest, src`| 88–8B      |
+| `ADD`      | `ADD dest, src`| 00–03      |
+| `SUB`      | `SUB dest, src`| 28–2B      |
+| `JMP`      | `JMP etiqueta` | E9         |
+| `CMP`      | `CMP op1, op2` | 38–3B      |
+| `JE`       | `JE etiqueta`  | 74         |
+| `JNE`      | `JNE etiqueta` | 75         |
 
-- Python 3.6 o superior.
-- Conocimientos básicos de arquitectura IA-32 y conjunto de instrucciones.
-- Manejo de estructuras de datos en Python.
+### Modos de direccionamiento:
 
-## Integrantes
+- Registro a registro
+- Inmediato a registro
+- Memoria a registro (mediante etiquetas)
 
-- Guadalupe Isabela De la Fuente Flores
-- Laura Isabel Hernández Castro
-- Pérez Carmona José Bruno
-- Martínez Rosales Hugo Armando
+## 🚀 Uso
 
-## Uso
-
-1. Preparar un archivo de código ensamblador con extensión `.asm` con instrucciones soportadas.
-2. Ejecutar el ensamblador con Python indicando el archivo de entrada.
-3. El ensamblador generará:
-   - Un archivo `.hex` con el código máquina en formato hexadecimal.
-   - Archivos `simbolos.txt` y `referencias.txt` con las tablas generadas.
-
-## Ejemplo de ejecución
+1. Coloca tu código ensamblador en `programa.asm`.
+2. Ejecuta:
 
 ```bash
-python ensamblador.py programa.asm
+python ensamblador.py
+```
+
+3. Se generarán los siguientes archivos:
+   - `programa.hex`: Código máquina en formato hexadecimal
+   - `simbolos.txt`: Tabla de símbolos
+   - `referencias.txt`: Tabla de referencias pendientes
+
+## 📁 Estructura del repositorio
+
+```
+ensamblador-ia32/
+├── ensamblador.py
+├── programa.asm
+├── programa.hex         # Generado
+├── simbolos.txt         # Generado
+├── referencias.txt      # Generado
+├── README.md
+└── .gitignore
+```
+
+## ✍️ Autor
+
+Este proyecto fue desarrollado como parte de un ejercicio académico sobre ensambladores y arquitectura IA-32.

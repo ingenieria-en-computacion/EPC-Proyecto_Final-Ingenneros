@@ -1,5 +1,4 @@
-MOV EAX, EBX
-ADD EAX, 10
-SUB EAX, ECX
-MOV ECX, 0x20
-ADD ECX, 5
+start:
+    MOV EAX, EBX
+    MOV ECX, EDX
+    JMP start
