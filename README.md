@@ -57,6 +57,9 @@ ensamblador-ia32/
 
 ## ✍️ Autor
 
-Martínez Cortés Gael
+- Guadalupe Isabela De la Fuente Flores
+- Laura Isabel Hernández Castro
+- Pérez Carmona José Bruno
+- Martínez Rosales Hugo Armando
 
 Este proyecto fue desarrollado como parte de un ejercicio académico sobre ensambladores y arquitectura IA-32.
