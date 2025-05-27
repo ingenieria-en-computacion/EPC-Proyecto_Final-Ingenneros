@@ -57,4 +57,6 @@ ensamblador-ia32/
 
 ## ✍️ Autor
 
+Martínez Cortés Gael
+
 Este proyecto fue desarrollado como parte de un ejercicio académico sobre ensambladores y arquitectura IA-32.
