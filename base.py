@@ -57,6 +57,14 @@ class EnsambladorIA32:
             self.generar_add(operandos)
         elif mnemonico == 'SUB':
             self.generar_sub(operandos)
+        elif mnemonico == 'CMP':
+            self.generar_cmp(operandos)
+        elif mnemonico == 'JMP':
+            self.generar_jmp(operandos[0])
+        elif mnemonico == 'JE':
+            self.generar_je(operandos[0])
+        elif mnemonico == 'JNE':
+            self.generar_jne(operandos[0])        
         else:
             print(f"Instrucción '{mnemonico}' no implementada aún")
             self.contador_posicion += 2  # Temporal   
@@ -194,6 +202,86 @@ class EnsambladorIA32:
             return
 
         print("Error: modo de direccionamiento no soportado o mal operandos")
+
+    def generar_cmp(self, operandos):
+        if len(operandos) != 2:
+            print("Error: CMP requiere 2 operandos")
+            return
+
+        dest, src = operandos
+
+        # Registro a registro
+        if dest in REGISTROS_32 and src in REGISTROS_32:
+            opcode = 0x39
+            mod = 0b11
+            reg = REGISTROS_32[src]
+            rm = REGISTROS_32[dest]
+            modrm = (mod << 6) | (reg << 3) | rm
+
+            self.codigo_hex.append(opcode)
+            self.codigo_hex.append(modrm)
+            print(f"Generado CMP reg,reg: opcode {opcode:02X} modrm {modrm:02X}")
+            self.contador_posicion += 2
+            return
+
+        # Inmediato a registro
+        if dest in REGISTROS_32:
+            try:
+                valor_inmediato = int(src, 0)
+            except ValueError:
+                print(f"Error: valor inmediato inválido '{src}'")
+                return
+
+            opcode = 0x81
+            mod = 0b11
+            reg = 0b111  # /7 en ModR/M para CMP
+            rm = REGISTROS_32[dest]
+            modrm = (mod << 6) | (reg << 3) | rm
+
+            self.codigo_hex.append(opcode)
+            self.codigo_hex.append(modrm)
+            for i in range(4):
+                self.codigo_hex.append((valor_inmediato >> (8 * i)) & 0xFF)
+            print(f"Generado CMP reg,imm: opcode {opcode:02X} modrm {modrm:02X} imm {valor_inmediato}")
+            self.contador_posicion += 6
+            return
+
+        print("Error: modo de direccionamiento no soportado o mal operandos")
+
+    def generar_jmp(self, etiqueta):
+        if etiqueta not in self.tabla_simbolos:
+            print(f"Error: Etiqueta '{etiqueta}' no definida.")
+            self.referencias_pendientes[etiqueta] = self.referencias_pendientes.get(etiqueta, [])
+            self.referencias_pendientes[etiqueta].append(self.contador_posicion)
+            return
+
+        desplazamiento = self.tabla_simbolos[etiqueta] - self.contador_posicion - 5
+        self.codigo_hex.append(0xE9)
+        for i in range(4):
+            self.codigo_hex.append((desplazamiento >> (8 * i)) & 0xFF)
+    
+        print(f"Generado JMP a {etiqueta} con desplazamiento {desplazamiento}")
+        self.contador_posicion += 5
+
+    def generar_je(self, etiqueta):
+            self.generar_condicional(0x74, etiqueta)
+
+    def generar_jne(self, etiqueta):
+            self.generar_condicional(0x75, etiqueta)
+
+    def generar_condicional(self, opcode, etiqueta):
+        if etiqueta not in self.tabla_simbolos:
+            print(f"Error: Etiqueta '{etiqueta}' no definida.")
+            self.referencias_pendientes[etiqueta] = self.referencias_pendientes.get(etiqueta, [])
+            self.referencias_pendientes[etiqueta].append(self.contador_posicion)
+            return
+
+        desplazamiento = self.tabla_simbolos[etiqueta] - self.contador_posicion - 2
+        self.codigo_hex.append(opcode)
+        self.codigo_hex.append(desplazamiento & 0xFF)
+
+        print(f"Generado salto condicional {hex(opcode)} a {etiqueta} con desplazamiento {desplazamiento}")
+        self.contador_posicion += 2
 
 if __name__ == "__main__":
     ensamblador = EnsambladorIA32()
